@@ -105,9 +105,6 @@ HttpOnly `SameSite` cookies (no tokens in JS or storage), 10-minute JWT + rotati
 ## Deployment
 Build two images (`backend/Dockerfile`, `frontend/Dockerfile`), run PostgreSQL 16 with a persistent volume, terminate TLS in front of nginx, set `MINDSPACE_COOKIE_SECURE=true`, a strong `MINDSPACE_JWT_SECRET` and the real origin in `MINDSPACE_CORS_ALLOWED_ORIGINS`. Set `MINDSPACE_API_DOCS_ENABLED=false` to hide Swagger/OpenAPI in production. The `prod` profile turns on secure cookies and JSON logs (note: Compose overrides `MINDSPACE_COOKIE_SECURE` to `false` so it works over plain http on localhost). Rate limiters are in-memory, so run **one** backend instance or replace them with a shared store first (see limitations).
 
-## Screenshots
-None yet. The UI has not been rendered because the frontend could not be built in the authoring environment. Add real screenshots after the first successful run.
-
 ## Known limitations
 See [docs/LIMITATIONS.md](docs/LIMITATIONS.md). Highlights: unverified build; in-memory rate limiting; export built in memory; no e-mail/password reset or MFA; single-region helpline list; no offline support.
 
