@@ -1,0 +1,24 @@
+# 2026-10-19T22:16:22Z  frontend pure-logic tests via tsx + vitest-global stand-in (NOT real vitest)
+== src/lib/dates.test.ts
+PASS dates > todayIn uses the zone, not UTC: 23:30 UTC is already tomorrow in Kolkata
+PASS dates > addDays crosses month, year and leap boundaries
+PASS dates > daysBetween is signed and DST-proof
+PASS dates > weekStart returns the Monday (ISO week)
+PASS dates > shiftMonth wraps years
+PASS dates > monthGrid is Monday-first, padded to whole weeks
+PASS dates > formatDuration
+PASS dates > isValidTimeZone
+TOTAL: 8 tests, 8 passed, 0 failed
+== src/lib/breathing.test.ts
+PASS breathing state machine > skips zero-length phases
+PASS breathing state machine > cycle and total durations
+PASS breathing state machine > position at the start, on a boundary and mid-phase
+PASS breathing state machine > finishes exactly after the last cycle
+TOTAL: 4 tests, 4 passed, 0 failed
+== src/lib/mood.test.ts
+PASS mood helpers (scale is 1-5, same as the backend) > labels cover the whole scale and clamp out-of-range values
+PASS mood helpers (scale is 1-5, same as the backend) > shade is transparent without data and darker for higher mood
+PASS mood helpers (scale is 1-5, same as the backend) > tags are trimmed, lower-cased, de-duplicated and capped
+PASS api helpers > readCookie finds and decodes a value
+PASS api helpers > qs drops empty values and encodes the rest
+TOTAL: 5 tests, 5 passed, 0 failed

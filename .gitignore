@@ -1,0 +1,30 @@
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+
+# Backend (Maven / Java)
+backend/target/
+*.class
+*.log
+!docs/db-verification/*.log
+!docs/verification/*.log
+hs_err_pid*
+
+# Frontend (Node / Vite)
+frontend/node_modules/
+frontend/dist/
+frontend/coverage/
+frontend/playwright-report/
+frontend/test-results/
+
+# IDEs / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# Local database volumes and exports
+pgdata/
+*.dump
+mindspace-export-*.json

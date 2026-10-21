@@ -1,0 +1,16 @@
+# Used by integration tests. The database comes from Testcontainers (@ServiceConnection).
+mindspace:
+  security:
+    jwt-secret: test-only-secret-test-only-secret-1234567890
+    bcrypt-strength: 4          # fast hashing for tests only
+    cookie-secure: false
+  rate-limit:
+    auth-ip-max: 1000
+    login-email-max: 1000
+    sensitive-ip-max: 1000
+springdoc:
+  api-docs:
+    enabled: true
+logging:
+  level:
+    root: WARN

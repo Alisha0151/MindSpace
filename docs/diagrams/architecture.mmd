@@ -1,0 +1,20 @@
+flowchart LR
+  subgraph Browser
+    SPA["React + TypeScript SPA<br/>(Vite, Tailwind, TanStack Query)"]
+  end
+  subgraph Edge["nginx (frontend container)"]
+    STATIC["Static assets + CSP/security headers"]
+    PROXY["/api reverse proxy (same origin)"]
+  end
+  subgraph API["Spring Boot 3 (Java 21) - modular monolith"]
+    F["Filters: RequestId, SizeLimit, RateLimit, JWT cookie auth, CSRF"]
+    C["Controllers (REST /api/v1)"]
+    S["Services (ownership checks, transactions)"]
+    D["Pure domain logic<br/>streaks, check-in rules, analytics, password policy"]
+    R["Spring Data JPA repositories<br/>(every finder scoped by user id)"]
+  end
+  DB[("PostgreSQL 16<br/>Flyway V1-V6")]
+  SPA -->|HTTPS, HttpOnly cookies + X-XSRF-TOKEN| STATIC
+  SPA --> PROXY
+  PROXY --> F --> C --> S --> D
+  S --> R --> DB

@@ -1,0 +1,7 @@
+flowchart LR
+  U(["User"])
+  P(("0. MindSpace<br/>system"))
+  DB[("Private data store<br/>PostgreSQL")]
+  U -- "credentials, check-ins, journal text,<br/>habit actions, settings, delete request" --> P
+  P -- "pages, charts, summaries,<br/>export file, errors" --> U
+  P <-- "own-user rows only" --> DB

@@ -1,0 +1,209 @@
+== MindSpace database tests ==
+date:        2026-10-17T15:54:45Z
+temp dir:    /tmp/mindspace-dbtest.Fs5Clc (removed on exit)
+server:      PostgreSQL 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0, 64-bit
+
+== Applying migrations (plain psql, one transaction per file; NOT Flyway) ==
+  applied  V1__users_sessions_preferences.sql
+  applied  V2__mood_check_ins.sql
+  applied  V3__journal.sql
+  applied  V4__habits.sql
+  applied  V5__coping_strategies.sql
+
+== Running test suites ==
+  ran      10_schema.sql
+  ran      20_checkins.sql
+  ran      30_journal.sql
+  ran      40_habits.sql
+  ran      50_ownership_deletion.sql
+  ran      60_analytics.sql
+  ran      70_query_plans.sql
+
+== Concurrency tests (10 parallel sessions each) ==
+
+== Results ==
+PASS [schema] exactly 12 application tables exist  -> expected=12 actual=12
+PASS [schema] application table names are exactly the expected set  -> expected=check_in_tags,consent_records,coping_strategies,habit_completions,habit_pauses,habits,journal_entries,journal_entry_tags,mood_check_ins,refresh_sessions,user_preferences,users actual=check_in_tags,consent_records,coping_strategies,habit_completions,habit_pauses,habits,journal_entries,journal_entry_tags,mood_check_ins,refresh_sessions,user_preferences,users
+PASS [schema] every table has a primary key  -> expected=0 actual=0
+PASS [schema] every "id" column is uuid  -> expected=0 actual=0
+PASS [schema] all *_at instants are timestamptz (none are timestamp without time zone)  -> expected=0 actual=0
+PASS [schema] timestamptz columns actually exist (19 *_at columns)  -> expected=19 actual=19
+PASS [schema] tables without a direct user_id are only users + the two tag tables  -> expected=check_in_tags,journal_entry_tags,users actual=check_in_tags,journal_entry_tags,users
+PASS [schema] every user_id column is NOT NULL  -> expected=0 actual=0
+PASS [schema] every user_id column has a foreign key to users(id)  -> expected=0 actual=0
+PASS [schema] 9 foreign keys reference users(id)  -> expected=9 actual=9
+PASS [schema] all foreign keys to users are ON DELETE CASCADE  -> expected=0 actual=0
+PASS [schema] no PostgreSQL ENUM types (JPA-friendly VARCHAR + CHECK instead)  -> expected=0 actual=0
+PASS [schema] all 19 expected indexes exist (none missing)  -> expected=NULL actual=NULL
+PASS [schema] every table with updated_at has the set_updated_at trigger  -> expected=NULL actual=NULL
+PASS [schema] habit pause/completion ownership FKs are composite (habit_id, user_id)  -> expected=habit_completions_habit_owner_fk,habit_pauses_habit_owner_fk actual=habit_completions_habit_owner_fk,habit_pauses_habit_owner_fk
+PASS [checkins] valid check-in is accepted  -> accepted
+PASS [checkins] duplicate check-in for same user + local date is rejected  -> rejected with SQLSTATE 23505 / mood_check_ins_user_date_key
+PASS [checkins] same local date for a DIFFERENT user is allowed  -> accepted
+PASS [checkins] different local date for the same user is allowed  -> accepted
+PASS [checkins] mood_score 0 rejected  -> rejected with SQLSTATE 23514 / mood_check_ins_mood_chk
+PASS [checkins] mood_score 6 rejected  -> rejected with SQLSTATE 23514 / mood_check_ins_mood_chk
+PASS [checkins] stress_score 0 rejected  -> rejected with SQLSTATE 23514 / mood_check_ins_stress_chk
+PASS [checkins] energy_score 6 rejected  -> rejected with SQLSTATE 23514 / mood_check_ins_energy_chk
+PASS [checkins] sleep_minutes -1 rejected  -> rejected with SQLSTATE 23514 / mood_check_ins_sleep_minutes_chk
+PASS [checkins] sleep_minutes 1441 (more than 24h) rejected  -> rejected with SQLSTATE 23514 / mood_check_ins_sleep_minutes_chk
+PASS [checkins] sleep_quality 6 rejected  -> rejected with SQLSTATE 23514 / mood_check_ins_sleep_quality_chk
+PASS [checkins] sleep_quality may be NULL (optional field)  -> accepted
+PASS [checkins] notes of exactly 2000 characters accepted  -> accepted
+PASS [checkins] notes of 2001 characters rejected  -> rejected with SQLSTATE 23514 / mood_check_ins_notes_chk
+PASS [checkins] NULL mood_score rejected (NOT NULL)  -> rejected with SQLSTATE 23502 / 
+PASS [checkins] check-in for a nonexistent user rejected (FK)  -> rejected with SQLSTATE 23503 / mood_check_ins_user_fk
+PASS [checkins] upsert (first call) inserts  -> accepted
+PASS [checkins] upsert (second call, same date) updates instead of failing  -> accepted
+PASS [checkins] after two upserts exactly one row exists with the latest value  -> expected=1 row(s), mood=5 actual=1 row(s), mood=5
+PASS [checkins] updated_at advances on UPDATE while created_at is unchanged  -> created_at=2026-10-17 15:54:46.419756+00 updated_at=2026-10-17 15:54:46.48062+00
+PASS [checkins] emotion tags accepted  -> accepted
+PASS [checkins] same label under a different tag_type is allowed  -> accepted
+PASS [checkins] duplicate tag on the same check-in rejected  -> rejected with SQLSTATE 23505 / check_in_tags_pkey
+PASS [checkins] upper-case tag label rejected  -> rejected with SQLSTATE 23514 / check_in_tags_label_chk
+PASS [checkins] empty tag label rejected  -> rejected with SQLSTATE 23514 / check_in_tags_label_chk
+PASS [checkins] unknown tag_type rejected  -> rejected with SQLSTATE 23514 / check_in_tags_type_chk
+PASS [checkins] tag for a nonexistent check-in rejected (FK)  -> rejected with SQLSTATE 23503 / check_in_tags_check_in_fk
+PASS [checkins] deleting a check-in cascades to its tags  -> expected=0 actual=0
+PASS [checkins] deleting a check-in leaves the same user's other check-ins intact  -> expected=1 actual=1
+PASS [journal] page 1 (limit 2) returns the two newest entries in order  -> expected=(05) | (04) actual=(05) | (04)
+PASS [journal] page 2 via keyset cursor continues without overlap  -> expected=(03) | (02) actual=(03) | (02)
+PASS [journal] page 3 returns the single remaining entry  -> expected=(01) actual=(01)
+PASS [journal] date range 2026-10-03..2026-10-07 (inclusive) returns 3 entries  -> expected=(02) | (03) | (04) actual=(02) | (03) | (04)
+PASS [journal] search "river" as A finds only A's entry  -> expected=(01) actual=(01)
+PASS [journal] search "river" as B finds only B's entry  -> expected=(b1) actual=(b1)
+PASS [journal] unscoped "river" search WOULD match both users (proves the scoping test is meaningful)  -> expected=2 actual=2
+PASS [journal] search for a word only B used ("zebra") returns nothing for A  -> expected=<no rows> actual=<no rows>
+PASS [journal] search matches the title ("quiet")  -> expected=(01) actual=(01)
+PASS [journal] search "work" finds only the entry containing the word  -> expected=(02) actual=(02)
+PASS [journal] multi-word search is AND ("work report" matches no single entry)  -> expected=<no rows> actual=<no rows>
+PASS [journal] tag filter "nature" for A returns A's two tagged entries only  -> expected=(01) | (04) actual=(01) | (04)
+PASS [journal] unscoped tag "nature" would return 3 rows (B also uses it)  -> expected=3 actual=3
+PASS [journal] search_vector is regenerated after the body is edited  -> expected=(05) actual=(05)
+PASS [journal] search_vector cannot be written directly (generated column)  -> rejected with SQLSTATE 428C9 / 
+PASS [journal] empty body rejected  -> rejected with SQLSTATE 23514 / journal_entries_body_chk
+FAIL [journal] whitespace-only body rejected  -> expected SQLSTATE 23514 but the statement succeeded (rolled back)
+PASS [journal] body of 10001 characters rejected  -> rejected with SQLSTATE 23514 / journal_entries_body_chk
+PASS [journal] body of exactly 10000 characters accepted  -> accepted
+PASS [journal] NULL body rejected (NOT NULL)  -> rejected with SQLSTATE 23502 / 
+FAIL [journal] title of 201 characters rejected  -> expected SQLSTATE 23514, got 22001: value too long for type character varying(200)
+FAIL [journal] prompt_text of 301 characters rejected  -> expected SQLSTATE 23514, got 22001: value too long for type character varying(300)
+PASS [journal] entry for a nonexistent user rejected (FK)  -> rejected with SQLSTATE 23503 / journal_entries_user_fk
+PASS [journal] upper-case tag rejected  -> rejected with SQLSTATE 23514 / journal_entry_tags_tag_chk
+PASS [journal] duplicate tag on one entry rejected  -> rejected with SQLSTATE 23505 / journal_entry_tags_pkey
+PASS [journal] tag on a nonexistent entry rejected (FK)  -> rejected with SQLSTATE 23503 / journal_entry_tags_entry_fk
+PASS [journal] deleting an entry cascades to its tags  -> expected=0 actual=0
+PASS [journal] deleting one entry leaves the user's other entries and tags intact  -> expected=4/5 actual=4/5
+PASS [habits] DAILY habit with target_count 1 accepted  -> accepted
+PASS [habits] WEEKLY habit with target_count 3 accepted  -> accepted
+PASS [habits] DAILY habit with target_count 2 rejected  -> rejected with SQLSTATE 23514 / habits_cadence_target_chk
+PASS [habits] WEEKLY habit with target_count 0 rejected  -> rejected with SQLSTATE 23514 / habits_cadence_target_chk
+PASS [habits] WEEKLY habit with target_count 8 rejected  -> rejected with SQLSTATE 23514 / habits_cadence_target_chk
+PASS [habits] unknown cadence rejected  -> rejected with SQLSTATE 23514 / habits_cadence_chk
+PASS [habits] end_date before start_date rejected  -> rejected with SQLSTATE 23514 / habits_dates_chk
+PASS [habits] end_date equal to start_date accepted (one-day habit)  -> accepted
+PASS [habits] blank habit name rejected  -> rejected with SQLSTATE 23514 / habits_name_chk
+PASS [habits] duplicate habit name for the same user rejected (case/whitespace-insensitive)  -> rejected with SQLSTATE 23505 / habits_user_name_uq
+PASS [habits] the same habit name for a DIFFERENT user is allowed  -> accepted
+PASS [habits] habit for a nonexistent user rejected (FK)  -> rejected with SQLSTATE 23503 / habits_user_fk
+PASS [habits] first completion accepted  -> accepted
+PASS [habits] duplicate completion (same habit + date) rejected  -> rejected with SQLSTATE 23505 / habit_completions_habit_date_key
+PASS [habits] completion on a different date accepted  -> accepted
+PASS [habits] idempotent completion (ON CONFLICT DO NOTHING) does not error on a repeat  -> accepted
+PASS [habits] after the repeat there are still exactly 2 completions for the habit  -> expected=2 actual=2
+PASS [habits] the other user's habit can be completed on the same date  -> accepted
+PASS [habits] OWNERSHIP: completion naming user B for user A's habit rejected (composite FK)  -> rejected with SQLSTATE 23503 / habit_completions_habit_owner_fk
+PASS [habits] completion for a nonexistent habit rejected  -> rejected with SQLSTATE 23503 / habit_completions_habit_owner_fk
+PASS [habits] OWNERSHIP: pause naming user B for user A's habit rejected (composite FK)  -> rejected with SQLSTATE 23503 / habit_pauses_habit_owner_fk
+PASS [habits] open pause accepted  -> accepted
+PASS [habits] a second OPEN pause for the same habit rejected  -> rejected with SQLSTATE 23505 / habit_pauses_one_open_idx
+PASS [habits] resuming (setting resumed_on) accepted  -> accepted
+PASS [habits] a new open pause after a resume is accepted  -> accepted
+PASS [habits] pause with resumed_on equal to paused_on rejected  -> rejected with SQLSTATE 23514 / habit_pauses_range_chk
+PASS [habits] pause with resumed_on before paused_on rejected  -> rejected with SQLSTATE 23514 / habit_pauses_range_chk
+PASS [habits] deleting a habit cascades to its completions and pauses  -> expected=0/0 actual=0/0
+PASS [habits] deleting a habit leaves other habits' completions untouched  -> expected=1 actual=1
+PASS [habits] deleting a habit leaves other users' habits and completions untouched  -> expected=1/1 actual=1/1
+PASS [ownership] baseline row counts for user A across all 11 owned tables  -> expected=1/1/2/1/2/1/1/1/1/1/1 actual=1/1/2/1/2/1/1/1/1/1/1
+PASS [ownership] baseline row counts for user B across all 11 owned tables  -> expected=1/1/2/1/2/1/1/1/1/1/1 actual=1/1/2/1/2/1/1/1/1/1/1
+PASS [ownership] duplicate email rejected  -> rejected with SQLSTATE 23505 / users_email_key
+PASS [ownership] upper-case email rejected (must be normalised by the app)  -> rejected with SQLSTATE 23514 / users_email_normalized_chk
+PASS [ownership] email without "@" rejected  -> rejected with SQLSTATE 23514 / users_email_normalized_chk
+PASS [ownership] blank display_name rejected  -> rejected with SQLSTATE 23514 / users_display_name_chk
+PASS [ownership] NULL password_hash rejected  -> rejected with SQLSTATE 23502 / 
+PASS [ownership] second preferences row for the same user rejected (1:1)  -> rejected with SQLSTATE 23505 / user_preferences_pkey
+PASS [ownership] invalid theme rejected  -> rejected with SQLSTATE 23514 / user_preferences_theme_chk
+PASS [ownership] unknown consent type rejected  -> rejected with SQLSTATE 23514 / consent_records_type_chk
+PASS [ownership] duplicate refresh token hash rejected  -> rejected with SQLSTATE 23505 / refresh_sessions_token_hash_key
+PASS [ownership] token hash that is not 64 lower-case hex characters rejected (no raw tokens stored)  -> rejected with SQLSTATE 23514 / refresh_sessions_token_hash_chk
+PASS [ownership] session expiring before it was issued rejected  -> rejected with SQLSTATE 23514 / refresh_sessions_expiry_chk
+PASS [ownership] revoked_reason without revoked_at rejected  -> rejected with SQLSTATE 23514 / refresh_sessions_revocation_chk
+PASS [ownership] unknown revocation reason rejected  -> rejected with SQLSTATE 23514 / refresh_sessions_reason_chk
+PASS [ownership] session for a nonexistent user rejected (FK)  -> rejected with SQLSTATE 23503 / refresh_sessions_user_fk
+PASS [ownership] blank coping strategy title rejected  -> rejected with SQLSTATE 23514 / coping_strategies_title_chk
+PASS [ownership] negative sort_order rejected  -> rejected with SQLSTATE 23514 / coping_strategies_sort_chk
+PASS [ownership] IDOR: A cannot read B's check-in by id when the query is user-scoped  -> expected=0 actual=0
+PASS [ownership] IDOR control: B can read B's own check-in with the same scoped query  -> expected=1 actual=1
+PASS [ownership] IDOR: A cannot read B's journal entry by id when user-scoped  -> expected=0 actual=0
+PASS [ownership] IDOR: A cannot read B's habit by id when user-scoped  -> expected=0 actual=0
+PASS [ownership] IDOR: a user-scoped UPDATE of B's journal entry by A changes 0 rows  -> expected=0 actual=0
+PASS [ownership] IDOR: a user-scoped DELETE of B's habit by A removes 0 rows  -> expected=0 actual=0
+PASS [ownership] B's data is unchanged after the attempted cross-user write/delete  -> expected=1/1/2/1/2/1/1/1/1/1/1 actual=1/1/2/1/2/1/1/1/1/1/1
+PASS [ownership] B's journal body is still the original text  -> expected=synthetic entry B actual=synthetic entry B
+PASS [ownership] deleting a successor session nulls replaced_by on the predecessor (ON DELETE SET NULL)  -> expected=1 row, replaced_by is null=true actual=1 row, replaced_by is null=true
+PASS [ownership] DELETE USER: all 11 owned tables are empty for the deleted user  -> expected=0/0/0/0/0/0/0/0/0/0/0 actual=0/0/0/0/0/0/0/0/0/0/0
+PASS [ownership] DELETE USER: the user row itself is gone  -> expected=0 actual=0
+PASS [ownership] DELETE USER: no tag rows survive for the deleted user's check-in or journal entry  -> expected=0/0 actual=0/0
+PASS [ownership] DELETE USER: the other user's data is completely unchanged  -> expected=1/1/2/1/2/1/1/1/1/1/1 actual=1/1/2/1/2/1/1/1/1/1/1
+PASS [ownership] DELETE USER: the other user's active session still exists  -> expected=1 actual=1
+PASS [analytics] fixture: A has 10 check-ins, 17 tags, 11 completions  -> expected=10/17/11 actual=10/17/11
+PASS [analytics] weekly trend: two ISO weeks with exact averages  -> expected=(2026-10-05,5,3.40,2.60,3.40,408) | (2026-10-12,5,3.20,2.80,3.20,412) actual=(2026-10-05,5,3.40,2.60,3.40,408) | (2026-10-12,5,3.20,2.80,3.20,412)
+PASS [analytics] monthly trend: October n/mood/stress/energy/sleep  -> expected=(2026-10,10,3.30,2.70,3.30,410) actual=(2026-10,10,3.30,2.70,3.30,410)
+PASS [analytics] mood distribution is zero-filled and sums to 10  -> expected=(1,1) | (2,2) | (3,2) | (4,3) | (5,2) actual=(1,1) | (2,2) | (3,2) | (4,3) | (5,2)
+PASS [analytics] top 3 emotions; ACTIVITY tag "calm" is not counted and user B's tags do not leak  -> expected=(calm,6) | (hopeful,3) | (anxious,2) actual=(calm,6) | (hopeful,3) | (anxious,2)
+PASS [analytics] sleep buckets: observation counts and average mood (observation, not causation)  -> expected=(<6h,2,1.50) | (6-8h,6,3.33) | (8h+,2,5.00) actual=(<6h,2,1.50) | (6-8h,6,3.33) | (8h+,2,5.00)
+PASS [analytics] habit vs mood: 6 completed days avg 4.17, 4 non-completed days avg 2.00; completions on days without a check-in are ignored  -> expected=(t,6,4.17) | (f,4,2.00) actual=(t,6,4.17) | (f,4,2.00)
+PASS [analytics] coverage: 10 of 14 days logged = 71.4%  -> expected=(10,14,71.4) actual=(10,14,71.4)
+PASS [analytics] range comparison: week of 10-05 vs week of 10-12 average mood  -> expected=(3.40,3.20) actual=(3.40,3.20)
+PASS [analytics] longest daily streak for "Evening walk" is 5 (10-09 through 10-13)  -> expected=5 actual=5
+PASS [analytics] streak ending on 2026-10-13 is 5  -> expected=5 actual=5
+PASS [analytics] streak ending on 2026-10-18 is 1 (10-17 was missed)  -> expected=1 actual=1
+PASS [analytics] streak ending on a day with no completion (2026-10-17) is 0, not an error  -> expected=0 actual=0
+PASS [analytics] weekly habit "Long run" progress: week of 10-05 is 2/2 (met), week of 10-12 is 1/2  -> expected=(2026-10-05,2,2) | (2026-10-12,1,2) actual=(2026-10-05,2,2) | (2026-10-12,1,2)
+PASS [analytics] every check-in's local_date equals its created_at converted to the stored timezone  -> expected=10 actual=10
+PASS [analytics] exactly one check-in (00:30 IST on 10-18) would land on a different day if bucketed by UTC  -> expected=1 actual=1
+PASS [analytics] noise exists: an UNSCOPED count over the range sees 13 check-ins (10 for A + 3 for B)  -> expected=13 actual=13
+PASS [analytics] scoped average mood for A ignores B (3.30, not dragged down by B's 1s)  -> expected=3.30 actual=3.30
+PASS [analytics] empty user: average mood is NULL (no division-by-zero error)  -> expected=NULL actual=NULL
+PASS [analytics] empty user: coverage is 0 of 14 days = 0.0%  -> expected=(0,0.0) actual=(0,0.0)
+PASS [analytics] empty user: weekly trend returns no rows (the API must render an honest empty state)  -> expected=<no rows> actual=<no rows>
+PASS [analytics] empty user: mood distribution is still zero-filled 1..5  -> expected=(1,0) | (2,0) | (3,0) | (4,0) | (5,0) actual=(1,0) | (2,0) | (3,0) | (4,0) | (5,0)
+PASS [analytics] user B's habit-vs-mood result is built only from B's own data (1 completed day: 10-06, mood 1)  -> expected=(t,1,1.00) | (f,2,1.00) actual=(t,1,1.00) | (f,2,1.00)
+PASS [plans] bulk volume loaded: 30000 check-ins / 9000 journal entries / 18000 completions  -> expected=30000/9000/18000 actual=30000/9000/18000
+PASS [plans] check-in date-range lookup for one user uses mood_check_ins_user_date_key  -> plan uses mood_check_ins_user_date_key
+PASS [plans] journal history page (newest first, LIMIT 20) uses journal_entries_user_created_idx  -> plan uses journal_entries_user_created_idx
+PASS [plans] journal date-range filter uses journal_entries_user_date_idx  -> plan uses journal_entries_user_date_idx
+PASS [plans] completions by user and date range use habit_completions_user_date_idx  -> plan uses habit_completions_user_date_idx
+PASS [plans] habit completion duplicate probe (habit_id, completed_on) uses habit_completions_habit_date_key  -> plan uses habit_completions_habit_date_key
+PASS [plans] login lookup by email uses users_email_key  -> plan uses users_email_key
+PASS [plans] refresh-token lookup by hash uses refresh_sessions_token_hash_key  -> plan uses refresh_sessions_token_hash_key
+PASS [concurrency] 10 parallel plain INSERTs of the same (user, local_date) check-in: exactly one succeeds, the rest get a unique violation  -> succeeded=1 unique_violations=9 rows_in_table=1
+PASS [concurrency] 10 parallel idempotent habit completions (ON CONFLICT DO NOTHING): all succeed, exactly one row stored  -> succeeded=10 rows_in_table=1
+PASS [concurrency] 10 parallel check-in upserts with different mood values: all succeed, exactly one row, valid final value  -> succeeded=10 rows_in_table=1 final_mood=5
+PASS [concurrency] 10 parallel registrations with the same e-mail: exactly one account is created  -> succeeded=1 unique_violations=9 accounts=1
+
+== Summary ==
+    suite    | pass | fail | total 
+-------------+------+------+-------
+ schema      |   15 |    0 |    15
+ checkins    |   29 |    0 |    29
+ journal     |   25 |    3 |    28
+ habits      |   30 |    0 |    30
+ ownership   |   32 |    0 |    32
+ analytics   |   23 |    0 |    23
+ plans       |    8 |    0 |     8
+ concurrency |    4 |    0 |     4
+(8 rows)
+
+TOTAL: 169 assertions, 166 passed, 3 failed; suites aborted: 0
+RESULT: FAILED

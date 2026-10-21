@@ -1,0 +1,22 @@
+flowchart TD
+  A([Open MindSpace]) --> B{Session cookie valid?}
+  B -- No --> C[Landing page]
+  C --> D{Have an account?}
+  D -- No --> E[Register: validate, hash password, create session]
+  D -- Yes --> F[Login: rate-limited, generic error on failure]
+  E --> G[Dashboard]
+  F --> G
+  B -- Yes --> G
+  G --> H[Check-in]
+  G --> I[Journal: write, search, filter]
+  G --> J[Habits: complete, pause, progress]
+  G --> K[Calendar]
+  G --> L[Insights]
+  G --> M[Wellness toolkit]
+  G --> N[Settings]
+  N --> O[Export data]
+  N --> P{Delete account?}
+  P -- "Confirm with password" --> Q[All rows cascade-deleted, cookies cleared]
+  Q --> C
+  G --> R[Sign out: session revoked server-side]
+  R --> C

@@ -1,0 +1,26 @@
+sequenceDiagram
+  autonumber
+  participant B as Browser (SPA)
+  participant A as API
+  participant DB as PostgreSQL
+  B->>A: GET /auth/csrf
+  A-->>B: Set-Cookie XSRF-TOKEN (readable by JS)
+  B->>A: POST /auth/login (X-XSRF-TOKEN)
+  A->>DB: load user (or dummy hash), BCrypt compare
+  A->>DB: insert refresh_sessions (SHA-256 of token, family id)
+  A-->>B: Set-Cookie ms_access (JWT 10m, HttpOnly), ms_refresh (opaque 14d, HttpOnly, Path=/api/v1/auth)
+  B->>A: GET /dashboard (cookie)
+  A->>DB: session family still active?
+  A-->>B: 200
+  Note over B,A: access token expires
+  B->>A: GET /habits
+  A-->>B: 401
+  B->>A: POST /auth/refresh (single-flight)
+  A->>DB: rotate: mark old used, insert new in same family
+  A-->>B: new cookies
+  B->>A: GET /habits (retry once)
+  A-->>B: 200
+  Note over A,DB: replaying an already-rotated refresh token (outside the 10 s grace window) revokes the whole family
+  B->>A: POST /auth/logout
+  A->>DB: revoke family
+  A-->>B: clear cookies

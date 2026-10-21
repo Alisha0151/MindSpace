@@ -1,0 +1,109 @@
+erDiagram
+    users ||--o| user_preferences : "has (1:1)"
+    users ||--o{ consent_records : "records"
+    users ||--o{ refresh_sessions : "holds"
+    users ||--o{ mood_check_ins : "owns"
+    users ||--o{ journal_entries : "owns"
+    users ||--o{ habits : "owns"
+    users ||--o{ habit_pauses : "owns"
+    users ||--o{ habit_completions : "owns"
+    users ||--o{ coping_strategies : "owns"
+    mood_check_ins ||--o{ check_in_tags : "tagged with"
+    journal_entries ||--o{ journal_entry_tags : "tagged with"
+    habits ||--o{ habit_pauses : "paused during"
+    habits ||--o{ habit_completions : "completed on"
+    refresh_sessions |o--o| refresh_sessions : "replaced_by (rotation)"
+
+    users {
+        uuid id PK
+        varchar email UK "lower-case, trimmed"
+        varchar display_name
+        varchar password_hash "BCrypt only"
+        varchar timezone "IANA zone id"
+        timestamptz password_changed_at
+        timestamptz created_at
+        timestamptz updated_at
+        bigint version
+    }
+    refresh_sessions {
+        uuid id PK
+        uuid user_id FK
+        uuid family_id
+        varchar token_hash UK "SHA-256 hex, never the raw token"
+        timestamptz issued_at
+        timestamptz expires_at
+        timestamptz revoked_at
+        varchar revoked_reason
+        uuid replaced_by FK "ON DELETE SET NULL"
+    }
+    user_preferences {
+        uuid user_id PK, FK
+        varchar theme "light, dark, system"
+    }
+    consent_records {
+        uuid id PK
+        uuid user_id FK
+        varchar consent_type
+        boolean granted
+        varchar policy_version
+        timestamptz recorded_at
+    }
+    mood_check_ins {
+        uuid id PK
+        uuid user_id FK
+        date local_date "UK with user_id"
+        varchar timezone
+        int mood_score "1-5"
+        int stress_score "1-5"
+        int energy_score "1-5"
+        int sleep_minutes "0-1440"
+        int sleep_quality "1-5, optional"
+        text notes
+    }
+    check_in_tags {
+        uuid check_in_id PK, FK
+        varchar tag_type PK "EMOTION, ACTIVITY, CONTEXT"
+        varchar label PK
+    }
+    journal_entries {
+        uuid id PK
+        uuid user_id FK
+        date entry_date
+        varchar title
+        text body "plain text, max 10000"
+        varchar prompt_text
+        tsvector search_vector "generated"
+    }
+    journal_entry_tags {
+        uuid entry_id PK, FK
+        varchar tag PK
+    }
+    habits {
+        uuid id PK
+        uuid user_id FK "UK (id, user_id)"
+        varchar name "unique per user, case-insensitive"
+        varchar cadence "DAILY, WEEKLY"
+        int target_count
+        date start_date
+        date end_date
+    }
+    habit_pauses {
+        uuid id PK
+        uuid habit_id FK "composite FK with user_id"
+        uuid user_id FK
+        date paused_on
+        date resumed_on "NULL while open"
+    }
+    habit_completions {
+        uuid id PK
+        uuid habit_id FK "composite FK with user_id"
+        uuid user_id FK
+        date completed_on "UK with habit_id"
+    }
+    coping_strategies {
+        uuid id PK
+        uuid user_id FK
+        varchar title
+        text details
+        int sort_order
+    }

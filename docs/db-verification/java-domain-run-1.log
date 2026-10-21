@@ -1,0 +1,42 @@
+PASS MoodAnalyticsTest > range comparison: 3.40 vs 3.20
+PASS MoodAnalyticsTest > coverage: 10 of 14 days = 71.4%
+PASS MoodAnalyticsTest > coverage ignores check-ins outside the range and counts a day once
+PASS MoodAnalyticsTest > mood distribution is zero-filled
+PASS MoodAnalyticsTest > empty data: no exceptions, null averages, zero coverage, empty trends
+PASS MoodAnalyticsTest > enough-data threshold
+PASS MoodAnalyticsTest > habit vs mood: 6 done days avg 4.17, 4 other days avg 2.00; extra completions ignored
+PASS MoodAnalyticsTest > invalid ranges are rejected
+PASS MoodAnalyticsTest > monthly trend equals the SQL-verified October averages
+PASS MoodAnalyticsTest > rounding is HALF_UP: 2.125 mood-average case rounds to 2.13
+PASS MoodAnalyticsTest > sleep bucket edges: 359 is <6h, 360 is 6-8h, 479 is 6-8h, 480 is 8h+
+PASS MoodAnalyticsTest > sleep buckets: counts and average mood match SQL
+PASS MoodAnalyticsTest > top emotions: count descending, ties alphabetical
+PASS MoodAnalyticsTest > a Sunday and the following Monday fall into different weeks
+PASS MoodAnalyticsTest > weekly trend equals the SQL-verified averages for the two ISO weeks
+PASS CheckInRulesTest > sleep minutes limited to 0..1440; notes limited to 2000 characters
+PASS CheckInRulesTest > violation messages never echo submitted notes
+PASS CheckInRulesTest > required fields are reported when missing
+PASS CheckInRulesTest > scores outside 1..5 are rejected per field
+PASS CheckInRulesTest > a valid check-in has no violations; sleep quality and notes are optional
+PASS CommonRulesTest > blank detection treats tab and newline as whitespace (matches the DB constraint)
+PASS CommonRulesTest > inclusive day counts
+PASS CommonRulesTest > e-mail normalisation
+PASS CommonRulesTest > local date is correct across a DST change (US fall-back, 2026-11-01)
+PASS CommonRulesTest > the same instant is different calendar days in different timezones
+PASS CommonRulesTest > average and percent: HALF_UP, null/zero on empty, no division by zero
+PASS CommonRulesTest > tag normalisation
+PASS CommonRulesTest > weeks start on Monday
+PASS StreakCalculatorTest > completion rules: future, before start, after end, paused
+PASS StreakCalculatorTest > consistency excludes paused days and days outside start/end from the denominator
+PASS StreakCalculatorTest > consistency with no active days is 0.0%, not an error
+PASS StreakCalculatorTest > current streak: today not done yet does not reset the streak
+PASS StreakCalculatorTest > definition invariants mirror the database CHECK constraints
+PASS StreakCalculatorTest > longest daily streak is 5 (Oct 9-13)
+PASS StreakCalculatorTest > paused days neither count nor break a streak
+PASS StreakCalculatorTest > a streak never counts days before the habit started
+PASS StreakCalculatorTest > streak ending on a day: 5 on Oct 13, 1 on Oct 18, 0 on a missed day
+PASS StreakCalculatorTest > weekly progress: week of Oct 5 is 2/2 met, week of Oct 12 is 1/2 not met
+PASS StreakCalculatorTest > weekly progress is zero-filled for weeks with no completions and spans partial weeks
+PASS StreakCalculatorTest > weekly streak: unfinished current week does not reset it
+
+TOTAL: 40 tests, 40 passed, 0 failed

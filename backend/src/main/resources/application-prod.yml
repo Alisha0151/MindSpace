@@ -1,0 +1,13 @@
+# Activate with SPRING_PROFILES_ACTIVE=prod
+spring:
+  jpa:
+    show-sql: false
+logging:
+  structured:
+    format:
+      console: ecs      # JSON logs; request ids are included via MDC
+mindspace:
+  security:
+    cookie-secure: true
+  # Disable interactive docs in production unless you deliberately want them:
+  # set MINDSPACE_API_DOCS_ENABLED=false

@@ -1,0 +1,33 @@
+# 2026-10-19T22:16:10Z  tsc --strict on pure modules
+exit=0
+# esbuild syntax parse of every .ts/.tsx
+OK   src/components/ConfirmDialog.tsx
+OK   src/components/toast.tsx
+OK   src/components/ui.tsx
+OK   src/components/AppShell.tsx
+OK   src/app/App.tsx
+OK   src/app/guards.tsx
+OK   src/app/session.tsx
+OK   src/main.tsx
+OK   src/features/journal/JournalPages.tsx
+OK   src/features/auth/AuthPages.tsx
+OK   src/features/public/PublicPages.tsx
+OK   src/features/checkin/CheckInPage.tsx
+OK   src/features/wellness/WellnessPage.tsx
+OK   src/features/settings/SettingsPage.tsx
+OK   src/features/help/HelpPage.tsx
+OK   src/features/dashboard/DashboardPage.tsx
+OK   src/features/calendar/CalendarPage.tsx
+OK   src/features/habits/HabitsPage.tsx
+OK   src/features/insights/InsightsPage.tsx
+OK   src/test/setup.ts
+OK   src/lib/api.ts
+OK   src/lib/mood.ts
+OK   src/lib/dates.test.ts
+OK   src/lib/breathing.ts
+OK   src/lib/mood.test.ts
+OK   src/lib/queries.ts
+OK   src/lib/breathing.test.ts
+OK   src/lib/dates.ts
+OK   src/types.ts
+OK   e2e/smoke.spec.ts

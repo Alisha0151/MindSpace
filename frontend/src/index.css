@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --c-canvas: 248 247 244;
+  --c-surface: 255 255 255;
+  --c-sunken: 240 238 233;
+  --c-line: 224 221 213;
+  --c-ink: 31 36 33;
+  --c-muted: 98 106 100;
+  --c-accent: 31 111 92;
+  --c-accent-ink: 255 255 255;
+  --c-danger: 176 42 55;
+  --c-success: 27 122 74;
+  --c-warn: 150 90 10;
+  color-scheme: light;
+}
+:root[data-theme='dark'] {
+  --c-canvas: 18 22 20;
+  --c-surface: 27 32 29;
+  --c-sunken: 36 42 38;
+  --c-line: 58 66 61;
+  --c-ink: 236 239 235;
+  --c-muted: 160 170 163;
+  --c-accent: 110 200 170;
+  --c-accent-ink: 12 30 24;
+  --c-danger: 240 130 140;
+  --c-success: 120 210 160;
+  --c-warn: 235 185 100;
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-canvas text-ink font-sans antialiased;
+}
+:focus-visible {
+  outline: 2px solid rgb(var(--c-accent));
+  outline-offset: 2px;
+}
+.sr-only-focusable:not(:focus):not(:focus-within) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

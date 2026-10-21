@@ -1,0 +1,26 @@
+javac errors total: 1390
+--- error kinds other than missing-dependency kinds (expected: none) ---
+--- unresolved symbols that belong to this project (expected: none) ---
+--- unresolved symbol names (all should be third-party) ---
+class AccessDeniedException;class AccessDeniedHandler;class ApiResponse;class AttributeConverter;class AuthenticationEntryPoint;class AuthenticationEx
+ception;class AuthenticationPrincipal;class BCryptPasswordEncoder;class BasicAuthenticationFilter;class Bean;class Claims;class CollectionTable;class 
+Column;class Component;class Components;class Configuration;class ConfigurationProperties;class ConfigurationPropertiesScan;class ConstraintViolationE
+xception;class Converter;class Cookie;class CookieCsrfTokenRepository;class CorsConfiguration;class CorsConfigurationSource;class CsrfToken;class Csrf
+TokenRequestAttributeHandler;class DataIntegrityViolationException;class DateTimeFormat;class DeleteMapping;class ElementCollection;class Embeddable;c
+lass EnableScheduling;class EnableWebSecurity;class Entity;class Enumerated;class ExceptionHandler;class FilterChain;class GeneratedValue;class GetMap
+ping;class HttpHeaders;class HttpMediaTypeNotSupportedException;class HttpMessageNotReadableException;class HttpRequestMethodNotSupportedException;cla
+ss HttpSecurity;class HttpServletRequest;class HttpServletRequestWrapper;class HttpServletResponse;class HttpStatus;class Id;class Info;class JoinColu
+mn;class JpaRepository;class JsonCreator;class JsonValue;class JwtException;class Logger;class Max;class MethodArgumentNotValidException;class MethodA
+rgumentTypeMismatchException;class Min;class MissingServletRequestParameterException;class Modifying;class NoResourceFoundException;class NotBlank;cla
+ss NotEmpty;class NotNull;class OncePerRequestFilter;class OpenAPI;class Operation;class OptimisticLockingFailureException;class Order;class Page;clas
+s Pageable;class Param;class PasswordEncoder;class PatchMapping;class PathVariable;class PostMapping;class PrePersist;class PreUpdate;class ProblemDet
+ail;class PutMapping;class Query;class ReadListener;class RequestBody;class RequestMapping;class RequestParam;class ResponseCookie;class ResponseEntit
+y;class RestController;class RestControllerAdvice;class Scheduled;class Schema;class SecurityFilterChain;class SecurityRequirement;class SecuritySchem
+e;class Service;class ServletException;class ServletInputStream;class SimpleGrantedAuthority;class Size;class SpringBootApplication;class Table;class 
+Tag;class Transactional;class UrlBasedCorsConfigurationSource;class Valid;class Validated;class Version;method delete(HabitPause);method findById(UUID
+);method flush();method save(ConsentRecord);method save(RefreshSession);method save(User);method save(UserPreference);method saveAll(Collection<Coping
+Strategy>);method saveAndFlush(CopingStrategy);method saveAndFlush(Habit);method saveAndFlush(HabitPause);method saveAndFlush(JournalEntry);method sav
+eAndFlush(MoodCheckIn);variable CacheControl;variable CookieCsrfTokenRepository;variable Customizer;variable EnumType;variable FetchType;variable Gene
+rationType;variable HttpHeaders;variable HttpMethod;variable HttpStatus;variable Jwts;variable Keys;variable LoggerFactory;variable MDC;variable Order
+ed;variable PageRequest;variable ProblemDetail;variable ResponseCookie;variable ResponseEntity;variable SecurityContextHolder;variable SessionCreation
+Policy;variable SpringApplication;variable UsernamePasswordAuthenticationToken;variable super;
